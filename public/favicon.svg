@@ -1,0 +1,15 @@
+
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
+  <circle cx="50" cy="50" r="45" fill="url(#grad1)" />
+  <path d="M70 40C70 51.0457 61.0457 60 50 60C38.9543 60 30 51.0457 30 40C30 28.9543 38.9543 20 50 20C61.0457 20 70 28.9543 70 40Z" fill="white" />
+  <path d="M50 100L31.6987 70L68.3013 70L50 100Z" fill="white" />
+  <path d="M35 37.5C35 35.0147 37.0147 33 39.5 33C41.9853 33 44 35.0147 44 37.5C44 39.9853 41.9853 42 39.5 42C37.0147 42 35 39.9853 35 37.5Z" fill="#5b21b6" />
+  <path d="M56 37.5C56 35.0147 58.0147 33 60.5 33C62.9853 33 65 35.0147 65 37.5C65 39.9853 62.9853 42 60.5 42C58.0147 42 56 39.9853 56 37.5Z" fill="#5b21b6" />
+  <path d="M36 52.5C36 52.5 41.5 57.5 50 57.5C58.5 57.5 64 52.5 64 52.5" stroke="#5b21b6" stroke-width="2" stroke-linecap="round" />
+  <defs>
+    <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#9b87f5" />
+      <stop offset="100%" stop-color="#7E69AB" />
+    </linearGradient>
+  </defs>
+</svg>
