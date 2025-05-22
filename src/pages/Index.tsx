@@ -1,29 +1,27 @@
-
-import React, { useState } from 'react';
+import React from 'react';
 import Navbar from '../components/Navbar';
 import HeroSection from '../components/HeroSection';
-import Login from '../components/Login';
 import Dashboard from '../components/Dashboard';
+import { UserData } from '../components/Login';
 
-const Index = () => {
-  const [user, setUser] = useState<{ type: string } | null>(null);
-  
-  const handleLogin = (userType: string) => {
-    setUser({ type: userType });
-  };
-  
+interface IndexProps {
+  user: UserData | null;
+  onLogout: () => void;
+}
+
+const Index = ({ user, onLogout }: IndexProps) => {
   return (
     <div className="min-h-screen bg-background">
       {user ? (
         <>
-          <Navbar />
+          <Navbar user={user} onLogout={onLogout} />
           <div className="pt-20">
             <Dashboard />
           </div>
         </>
       ) : (
         <div>
-          <Navbar />
+          <Navbar user={null} onLogout={() => {}} />
           <HeroSection />
           
           <section id="features" className="py-20 bg-gradient-to-b from-background to-mentorpurple-50">

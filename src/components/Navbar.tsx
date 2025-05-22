@@ -1,13 +1,26 @@
 
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
-import { Menu } from "lucide-react";
+import { Menu, LogOut } from "lucide-react";
 import { Link, useNavigate } from 'react-router-dom';
+import { UserData } from './Login';
 
-const Navbar = () => {
+interface NavbarProps {
+  user: UserData | null;
+  onLogout?: () => void;
+}
+
+const Navbar = ({ user, onLogout }: NavbarProps) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
   
+  const handleLogout = () => {
+    if (onLogout) {
+      onLogout();
+      navigate('/');
+    }
+  };
+
   return (
     <nav className="w-full py-4 z-50 bg-background/80 backdrop-blur-md fixed top-0">
       <div className="container px-4 mx-auto flex items-center justify-between">
@@ -27,12 +40,28 @@ const Navbar = () => {
           <a href="#about" className="text-foreground/80 hover:text-mentorpurple-500 transition-colors">
             About
           </a>
-          <Button 
-            onClick={() => navigate('/login')} 
-            className="bg-mentorpurple-500 hover:bg-mentorpurple-600 text-white rounded-full px-6"
-          >
-            Sign In
-          </Button>
+          
+          {user ? (
+            <div className="flex items-center space-x-4">
+              <span className="text-mentorpurple-500 font-medium">
+                Hello, {user.name} ({user.userType})
+              </span>
+              <Button 
+                onClick={handleLogout}
+                className="flex items-center space-x-2 bg-mentorpurple-500 hover:bg-mentorpurple-600 text-white rounded-full px-6"
+              >
+                <LogOut className="h-4 w-4" />
+                <span>Logout</span>
+              </Button>
+            </div>
+          ) : (
+            <Button 
+              onClick={() => navigate('/login')} 
+              className="bg-mentorpurple-500 hover:bg-mentorpurple-600 text-white rounded-full px-6"
+            >
+              Sign In
+            </Button>
+          )}
         </div>
         
         {/* Mobile Menu Button */}
@@ -72,15 +101,33 @@ const Navbar = () => {
             >
               About
             </a>
-            <Button 
-              onClick={() => {
-                navigate('/login');
-                setMobileMenuOpen(false);
-              }} 
-              className="bg-mentorpurple-500 hover:bg-mentorpurple-600 text-white w-full"
-            >
-              Sign In
-            </Button>
+            
+            {user ? (
+              <>
+                <div className="text-mentorpurple-500 font-medium py-2">
+                  Hello, {user.name} ({user.userType})
+                </div>
+                <Button 
+                  onClick={() => {
+                    handleLogout();
+                    setMobileMenuOpen(false);
+                  }} 
+                  className="bg-mentorpurple-500 hover:bg-mentorpurple-600 text-white w-full flex items-center justify-center"
+                >
+                  <LogOut className="h-4 w-4 mr-2" /> Logout
+                </Button>
+              </>
+            ) : (
+              <Button 
+                onClick={() => {
+                  navigate('/login');
+                  setMobileMenuOpen(false);
+                }} 
+                className="bg-mentorpurple-500 hover:bg-mentorpurple-600 text-white w-full"
+              >
+                Sign In
+              </Button>
+            )}
           </div>
         </div>
       )}

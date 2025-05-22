@@ -1,5 +1,6 @@
 
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -9,7 +10,13 @@ import { useToast } from "@/hooks/use-toast";
 import { User, School } from "lucide-react";
 
 interface LoginProps {
-  onLogin: (userType: string) => void;
+  onLogin: (userType: string, userData: UserData) => void;
+}
+
+export interface UserData {
+  name: string;
+  email: string;
+  userType: 'student' | 'teacher';
 }
 
 const Login = ({ onLogin }: LoginProps) => {
@@ -19,36 +26,77 @@ const Login = ({ onLogin }: LoginProps) => {
   const [userType, setUserType] = useState<'student' | 'teacher'>('student');
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+  const navigate = useNavigate();
   
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     
-    // Simulate login API call
+    // For demo, we'll simulate login with validation
     setTimeout(() => {
       setLoading(false);
-      // For demo, we'll bypass actual authentication
-      toast({
-        title: "Logged in successfully",
-        description: `Welcome back to MentorMind!`,
-      });
-      onLogin(userType);
-    }, 1500);
+      
+      if (email && password) {
+        // In a real app, you would validate credentials against a server
+        const userData: UserData = {
+          name: email.split('@')[0], // Using part of email as name for demo
+          email,
+          userType
+        };
+        
+        // Store user in localStorage for persistence
+        localStorage.setItem('mentorMindUser', JSON.stringify(userData));
+        
+        toast({
+          title: "Logged in successfully",
+          description: `Welcome back to MentorMind!`,
+        });
+        
+        onLogin(userType, userData);
+        navigate('/');
+      } else {
+        toast({
+          title: "Login failed",
+          description: "Please enter valid credentials",
+          variant: "destructive",
+        });
+      }
+    }, 1000);
   };
   
   const handleRegister = (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     
-    // Simulate registration API call
     setTimeout(() => {
       setLoading(false);
-      toast({
-        title: "Account created successfully",
-        description: "Welcome to MentorMind! Your adventure begins now.",
-      });
-      onLogin(userType);
-    }, 1500);
+      
+      if (name && email && password) {
+        // In a real app, you would send registration data to a server
+        const userData: UserData = {
+          name,
+          email,
+          userType
+        };
+        
+        // Store user in localStorage for persistence
+        localStorage.setItem('mentorMindUser', JSON.stringify(userData));
+        
+        toast({
+          title: "Account created successfully",
+          description: "Welcome to MentorMind! Your adventure begins now.",
+        });
+        
+        onLogin(userType, userData);
+        navigate('/');
+      } else {
+        toast({
+          title: "Registration failed",
+          description: "Please fill all required fields",
+          variant: "destructive",
+        });
+      }
+    }, 1000);
   };
   
   return (
