@@ -1,10 +1,49 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { toast } from "@/hooks/use-toast";
 
 // AboutPage component: Displays information about MentorMind
 const AboutPage = () => {
+  const [showWaitlistDialog, setShowWaitlistDialog] = useState(false);
+  const [email, setEmail] = useState('');
+  const [emailSubmitted, setEmailSubmitted] = useState(false);
+
+  // Handler for joining the waitlist
+  const handleJoinWaitlist = () => {
+    setShowWaitlistDialog(true);
+  };
+
+  // Handler for submitting the waitlist email
+  const handleSubmitEmail = () => {
+    if (!email || !/\S+@\S+\.\S+/.test(email)) {
+      toast({
+        title: "Invalid Email",
+        description: "Please enter a valid email address.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    setEmailSubmitted(true);
+    console.log("Email submitted to waitlist:", email);
+    
+    // Close the dialog after 3 seconds
+    setTimeout(() => {
+      setShowWaitlistDialog(false);
+      setEmailSubmitted(false);
+      setEmail('');
+      
+      toast({
+        title: "Waitlist Confirmation",
+        description: "Thank you for joining our waitlist! You are our top priority.",
+      });
+    }, 3000);
+  };
+
   return (
     <div className="container mx-auto px-4 py-16">
       {/* Hero section with background image */}
@@ -20,6 +59,7 @@ const AboutPage = () => {
           <p className="text-lg md:text-xl max-w-2xl mx-auto">
             Knowledge Base powered by AI. Preserving world wisdom in the era of AI.
           </p>
+          <p className="text-sm italic mt-2">Powered by Wisdom Engine of Sensay</p>
         </div>
       </div>
 
@@ -48,6 +88,7 @@ const AboutPage = () => {
               Our proprietary technology combines multiple AI models to deliver authentic, accurate, and
               personalized learning experiences.
             </p>
+            <p className="text-xs text-mentorpurple-600 italic mt-2">Powered by Sensay – The World's Best AI Wisdom Engine</p>
           </div>
         </div>
       </div>
@@ -108,7 +149,7 @@ const AboutPage = () => {
       <div className="bg-mentorpurple-50 p-8 rounded-xl mb-16 relative overflow-hidden">
         <div className="absolute right-0 top-0 w-1/3 h-full opacity-10">
           <img 
-            src="https://images.unsplash.com/photo-1501854140801-50d01698950b" 
+            src="https://images.unsplash.com/photo-1519389950473-47ba0277781c" 
             alt="" 
             className="w-full h-full object-cover"
           />
@@ -133,13 +174,78 @@ const AboutPage = () => {
           Be the first to access MentorMind.ai and revolutionize how your organization preserves knowledge.
         </p>
         <div className="flex flex-col sm:flex-row justify-center gap-4 relative z-10">
-          <Button className="bg-mentorpurple-500 hover:bg-mentorpurple-600">Join the Waitlist</Button>
+          <Button 
+            className="bg-mentorpurple-500 hover:bg-mentorpurple-600"
+            onClick={handleJoinWaitlist}
+          >
+            Join the Waitlist
+          </Button>
           <Button variant="outline" className="border-mentorpurple-300">
             <span className="mr-2">Coming Soon</span> 
             <span className="bg-mentorpurple-100 text-mentorpurple-800 text-xs px-2 py-1 rounded-full">Private</span>
           </Button>
         </div>
       </div>
+
+      {/* Waitlist Dialog */}
+      <Dialog open={showWaitlistDialog} onOpenChange={setShowWaitlistDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Join the Organization Waitlist</DialogTitle>
+            <DialogDescription>
+              {!emailSubmitted 
+                ? "Enter your email to join our waitlist for organization access." 
+                : "Thank you! We will notify you when organization mentors become available."}
+            </DialogDescription>
+          </DialogHeader>
+
+          {!emailSubmitted ? (
+            <>
+              <div className="grid gap-4 py-4">
+                <div className="flex items-center gap-4">
+                  <Input
+                    id="email"
+                    placeholder="your.email@example.com"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="flex-1"
+                  />
+                </div>
+              </div>
+              <DialogFooter>
+                <Button
+                  type="submit"
+                  className="bg-mentorpurple-500 hover:bg-mentorpurple-600"
+                  onClick={handleSubmitEmail}
+                >
+                  Join Waitlist
+                </Button>
+              </DialogFooter>
+            </>
+          ) : (
+            <div className="py-6 text-center">
+              <div className="inline-block rounded-full bg-green-100 p-3 mb-4">
+                <svg 
+                  className="h-6 w-6 text-green-600" 
+                  fill="none" 
+                  viewBox="0 0 24 24" 
+                  stroke="currentColor"
+                >
+                  <path 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round" 
+                    strokeWidth={2} 
+                    d="M5 13l4 4L19 7" 
+                  />
+                </svg>
+              </div>
+              <p className="text-lg font-medium">Thank you for joining our waitlist!</p>
+              <p className="mt-2 text-foreground/70">You are now on our top priority list. We'll send you an email as soon as our organization mentors service becomes available.</p>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

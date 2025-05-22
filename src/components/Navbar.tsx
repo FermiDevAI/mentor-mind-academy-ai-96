@@ -43,7 +43,7 @@ const Navbar = ({ user, onLogout, onNavigation, currentPage = 'home' }: NavbarPr
   };
 
   return (
-    <header className="fixed w-full bg-white border-b border-gray-200 z-50">
+    <header className="fixed w-full bg-white/90 backdrop-blur-sm border-b border-gray-200 z-50 shadow-sm">
       <div className="container mx-auto px-4 flex justify-between items-center h-16">
         {/* Logo and site name */}
         <div className="flex items-center space-x-2">
@@ -54,6 +54,7 @@ const Navbar = ({ user, onLogout, onNavigation, currentPage = 'home' }: NavbarPr
           >
             MentorMind<span className="text-mentorpurple-600">.ai</span>
           </span>
+          <span className="text-xs italic text-mentorpurple-400 hidden md:block">Powered by Wisdom Engine of Sensay</span>
         </div>
         
         {/* Navigation links */}
