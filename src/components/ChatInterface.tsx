@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Send } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { chatService, replicaService } from '@/services/sensayApi';
 
 interface Message {
   id: string;
@@ -29,8 +30,41 @@ const ChatInterface = ({ mentorId, mentorName, mentorImage }: ChatInterfaceProps
     }
   ]);
   const [isLoading, setIsLoading] = useState(false);
+  const [replicaId, setReplicaId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
+  
+  // Initialize the replica when the component mounts
+  useEffect(() => {
+    const initializeReplica = async () => {
+      try {
+        // In a real app, this would be the authenticated user's ID
+        const userId = `user-${Date.now()}`;
+        
+        // Get or create a replica for this historical figure
+        const replicaUuid = await replicaService.getOrCreateHistoricalFigureReplica(
+          userId, 
+          {
+            name: mentorName,
+            description: `Historical figure: ${mentorName}`,
+            era: "Historical",
+            specialty: "Various subjects"
+          }
+        );
+        
+        setReplicaId(replicaUuid);
+      } catch (error) {
+        console.error("Failed to initialize replica:", error);
+        toast({
+          title: "Error",
+          description: "Failed to initialize the chat. Please try again.",
+          variant: "destructive"
+        });
+      }
+    };
+    
+    initializeReplica();
+  }, [mentorName, toast]);
   
   // Scroll to bottom of messages
   useEffect(() => {
@@ -38,7 +72,7 @@ const ChatInterface = ({ mentorId, mentorName, mentorImage }: ChatInterfaceProps
   }, [messages]);
   
   const handleSend = async () => {
-    if (!input.trim()) return;
+    if (!input.trim() || !replicaId) return;
     
     // Add user message
     const userMessage: Message = {
@@ -53,40 +87,46 @@ const ChatInterface = ({ mentorId, mentorName, mentorImage }: ChatInterfaceProps
     setIsLoading(true);
     
     try {
-      // In a real implementation, this would connect to Sensay API
-      // For now, we'll simulate a response
-      setTimeout(() => {
+      // In a real app, this would be the authenticated user's ID
+      const userId = `user-${Date.now()}`;
+      
+      // Send message to Sensay API
+      const response = await chatService.sendMessage(userId, replicaId, input);
+      
+      if (response.success) {
         const aiResponse: Message = {
           id: (Date.now() + 1).toString(),
           role: 'ai',
-          content: `As ${mentorName}, I find your question about "${input}" fascinating. Let me explain...`,
+          content: response.content || "I'm processing your request...",
           timestamp: new Date()
         };
         
         setMessages(prev => [...prev, aiResponse]);
-        setIsLoading(false);
-      }, 1500);
-      
+      } else {
+        throw new Error("Failed to get response");
+      }
     } catch (error) {
-      setIsLoading(false);
+      console.error("Chat error:", error);
       toast({
         title: "Error",
         description: "Failed to get response from mentor. Please try again.",
         variant: "destructive"
       });
+    } finally {
+      setIsLoading(false);
     }
   };
   
   return (
-    <div className="flex flex-col h-[600px] bg-gray-50 rounded-xl border border-gray-200 shadow-lg overflow-hidden">
-      <div className="bg-mentorpurple-500 text-white p-4 flex items-center">
-        <div className="w-10 h-10 rounded-full overflow-hidden mr-3 bg-white">
+    <div className="flex flex-col h-[600px] bg-gray-50 rounded-xl border border-gray-200 shadow-lg overflow-hidden transition-all duration-300 hover:shadow-xl hover:shadow-mentorpurple-300/30">
+      <div className="bg-mentorpurple-500 text-white p-4 flex items-center transition-colors duration-300 hover:bg-mentorpurple-600">
+        <div className="w-10 h-10 rounded-full overflow-hidden mr-3 bg-white border-2 border-transparent hover:border-white transition-all duration-300 transform hover:scale-110">
           <img src={mentorImage} alt={mentorName} className="w-full h-full object-cover" />
         </div>
         <h3 className="font-heading font-semibold">{mentorName}</h3>
       </div>
       
-      <div className="flex-grow overflow-y-auto p-4 space-y-4">
+      <div className="flex-grow overflow-y-auto p-4 space-y-4 bg-gradient-to-br from-white to-mentorpurple-50/30">
         {messages.map((msg) => (
           <div 
             key={msg.id} 
@@ -95,7 +135,9 @@ const ChatInterface = ({ mentorId, mentorName, mentorImage }: ChatInterfaceProps
             <div 
               className={`max-w-[80%] ${
                 msg.role === 'user' ? 'chat-bubble-user' : 'chat-bubble-ai'
-              } animate-fade-in`}
+              } animate-fade-in transition-all duration-300 hover:shadow-lg ${
+                msg.role === 'user' ? 'hover:bg-mentorpurple-600' : 'hover:bg-gray-300/80'
+              }`}
             >
               {msg.content}
             </div>
@@ -113,7 +155,7 @@ const ChatInterface = ({ mentorId, mentorName, mentorImage }: ChatInterfaceProps
         <div ref={messagesEndRef} />
       </div>
       
-      <div className="p-4 border-t border-gray-200">
+      <div className="p-4 border-t border-gray-200 bg-white">
         <form 
           onSubmit={(e) => {
             e.preventDefault();
@@ -125,15 +167,15 @@ const ChatInterface = ({ mentorId, mentorName, mentorImage }: ChatInterfaceProps
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder={`Ask ${mentorName} a question...`}
-            className="flex-grow focus-visible:ring-mentorpurple-500"
+            className="flex-grow focus-visible:ring-mentorpurple-500 transition-all duration-300 hover:border-mentorpurple-300"
             disabled={isLoading}
           />
           <Button 
             type="submit"
-            disabled={isLoading || !input.trim()}
-            className="bg-mentorpurple-500 hover:bg-mentorpurple-600 transition-colors"
+            disabled={isLoading || !input.trim() || !replicaId}
+            className="bg-mentorpurple-500 hover:bg-mentorpurple-600 transition-all duration-300 transform hover:scale-105 hover:shadow-md hover:shadow-mentorpurple-300/50"
           >
-            <Send className="h-5 w-5" />
+            <Send className="h-5 w-5 transition-transform duration-300 group-hover:rotate-12" />
           </Button>
         </form>
       </div>
