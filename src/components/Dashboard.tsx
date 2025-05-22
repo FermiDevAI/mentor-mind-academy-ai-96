@@ -121,7 +121,7 @@ const Dashboard = () => {
       )}
       
       {/* Progress tracker component */}
-      <ProgressTracker />
+      <ProgressTracker mentorId={selectedMentor ? selectedMentor.id : "default"} />
     </div>
   );
 };
