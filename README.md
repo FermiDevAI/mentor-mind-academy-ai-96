@@ -1,4 +1,10 @@
+
+
+<img width="301" alt="mentorailogo" src="https://github.com/user-attachments/assets/25951d6f-f742-4b0b-8ee2-332e35d1cc38" />
+
+
 # MentorMindAi ✨
+
 
 **Unlock Your Potential with AI-Powered Mentorship**
 
