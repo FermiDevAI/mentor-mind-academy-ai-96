@@ -1,13 +1,10 @@
 
-// Note: This is a simplified API route for demonstration purposes
-// In a real Next.js app, this would be placed in the appropriate Next.js API routes folder
-
-import { Request, Response } from 'express';
+import { NextApiRequest, NextApiResponse } from 'next';
 import { organizationClient, userService, replicaService, chatService } from '../../services/sensayApi';
 
-export default async function handler(req: Request, res: Response) {
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
-    const { action, userId, replicaId, message } = req.body;
+    const { action, userId, replicaId, message, figure } = req.body;
     
     switch (action) {
       case 'getOrCreateUser':
@@ -19,7 +16,6 @@ export default async function handler(req: Request, res: Response) {
         return res.status(200).json({ success: true, data: replicas });
         
       case 'getOrCreateReplica':
-        const { figure } = req.body;
         const replicaUuid = await replicaService.getOrCreateHistoricalFigureReplica(userId, figure);
         return res.status(200).json({ success: true, replicaId: replicaUuid });
         
@@ -32,6 +28,6 @@ export default async function handler(req: Request, res: Response) {
     }
   } catch (error) {
     console.error('API error:', error);
-    return res.status(500).json({ success: false, error: 'Server error' });
+    return res.status(500).json({ success: false, error: error.message || 'Server error' });
   }
 }
