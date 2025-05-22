@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { MessageCircle } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 interface HistoricalFigureProps {
   id: string;
@@ -24,6 +25,16 @@ const HistoricalFigureCard = ({
   specialty, 
   onStartChat 
 }: HistoricalFigureProps) => {
+  const { toast } = useToast();
+  
+  const handleStartChat = () => {
+    toast({
+      title: `Starting chat with ${name}`,
+      description: "Connecting to historical figure...",
+    });
+    onStartChat(id);
+  };
+
   return (
     <Card className="overflow-hidden border-mentorpurple-200/50 relative group transition-all duration-500 hover:shadow-xl hover:shadow-mentorpurple-300/30 hover:-translate-y-2">
       <div className="overflow-hidden h-48 relative">
@@ -52,7 +63,7 @@ const HistoricalFigureCard = ({
           </Badge>
           
           <Button 
-            onClick={() => onStartChat(id)}
+            onClick={handleStartChat}
             size="sm" 
             className="bg-mentorpurple-500 text-white transition-all duration-500 hover:bg-mentorpurple-600 hover:shadow-lg hover:shadow-mentorpurple-400/30 group/btn"
           >
