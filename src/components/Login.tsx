@@ -7,27 +7,36 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { User, School } from "lucide-react";
+import { User, School, Building } from "lucide-react";
 
+// Interface for the Login component props
 interface LoginProps {
   onLogin: (userType: string, userData: UserData) => void;
 }
 
+// Interface for user data
 export interface UserData {
   name: string;
   email: string;
-  userType: 'student' | 'teacher';
+  userType: 'student' | 'teacher' | 'organization';
 }
 
+// Login component manages user authentication
 const Login = ({ onLogin }: LoginProps) => {
+  // State for form fields and UI state
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
-  const [userType, setUserType] = useState<'student' | 'teacher'>('student');
+  const [userType, setUserType] = useState<'student' | 'teacher' | 'organization'>('student');
   const [loading, setLoading] = useState(false);
+  const [waitlistEmail, setWaitlistEmail] = useState('');
+  const [waitlistSubmitted, setWaitlistSubmitted] = useState(false);
+  
+  // Hooks for toast notifications and navigation
   const { toast } = useToast();
   const navigate = useNavigate();
   
+  // Handle login form submission
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -35,6 +44,16 @@ const Login = ({ onLogin }: LoginProps) => {
     // For demo, we'll simulate login with validation
     setTimeout(() => {
       setLoading(false);
+      
+      // Check if trying to login as an organization
+      if (userType === 'organization') {
+        toast({
+          title: "Organization access coming soon",
+          description: "Please join the waitlist for early access.",
+          variant: "destructive",
+        });
+        return;
+      }
       
       if (email && password) {
         // In a real app, you would validate credentials against a server
@@ -64,12 +83,23 @@ const Login = ({ onLogin }: LoginProps) => {
     }, 1000);
   };
   
+  // Handle registration form submission
   const handleRegister = (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     
     setTimeout(() => {
       setLoading(false);
+      
+      // Check if trying to register as an organization
+      if (userType === 'organization') {
+        toast({
+          title: "Organization access coming soon",
+          description: "Please join the waitlist for early access.",
+          variant: "destructive",
+        });
+        return;
+      }
       
       if (name && email && password) {
         // In a real app, you would send registration data to a server
@@ -97,6 +127,25 @@ const Login = ({ onLogin }: LoginProps) => {
         });
       }
     }, 1000);
+  };
+  
+  // Handle waitlist submission
+  const handleWaitlistSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (waitlistEmail) {
+      // In a real app, you would send this to your waitlist API
+      setWaitlistSubmitted(true);
+      toast({
+        title: "Waitlist submission received",
+        description: "Thank you for your interest! We'll notify you when organization access is available.",
+      });
+    } else {
+      toast({
+        title: "Please enter your email",
+        variant: "destructive",
+      });
+    }
   };
   
   return (
@@ -141,7 +190,7 @@ const Login = ({ onLogin }: LoginProps) => {
                   />
                 </div>
                 
-                <div className="flex space-x-4">
+                <div className="flex space-x-3">
                   <Button
                     type="button"
                     variant={userType === 'student' ? 'default' : 'outline'}
@@ -158,15 +207,47 @@ const Login = ({ onLogin }: LoginProps) => {
                   >
                     <School className="mr-2 h-4 w-4" /> Teacher
                   </Button>
+                  <Button
+                    type="button"
+                    variant={userType === 'organization' ? 'default' : 'outline'}
+                    className={`flex-1 ${userType === 'organization' ? 'bg-mentorpurple-500' : ''}`}
+                    onClick={() => setUserType('organization')}
+                  >
+                    <Building className="mr-2 h-4 w-4" /> Org
+                  </Button>
                 </div>
                 
-                <Button 
-                  type="submit" 
-                  className="w-full bg-mentorpurple-500 hover:bg-mentorpurple-600" 
-                  disabled={loading}
-                >
-                  {loading ? 'Logging in...' : 'Login'}
-                </Button>
+                {userType === 'organization' ? (
+                  <div className="bg-mentorpurple-50 p-4 rounded-lg text-center">
+                    <h4 className="font-medium mb-2">Coming Soon for Organizations</h4>
+                    <p className="text-sm text-muted-foreground mb-3">
+                      Be the first to access MentorMind.ai and revolutionize how your organization preserves knowledge.
+                    </p>
+                    {waitlistSubmitted ? (
+                      <p className="text-mentorpurple-600 font-medium">Thank you for joining the waitlist!</p>
+                    ) : (
+                      <form onSubmit={handleWaitlistSubmit} className="space-y-2">
+                        <Input
+                          placeholder="your@organization.com"
+                          value={waitlistEmail}
+                          onChange={(e) => setWaitlistEmail(e.target.value)}
+                          required
+                        />
+                        <Button type="submit" className="w-full bg-mentorpurple-500 hover:bg-mentorpurple-600">
+                          Join the Waitlist
+                        </Button>
+                      </form>
+                    )}
+                  </div>
+                ) : (
+                  <Button 
+                    type="submit" 
+                    className="w-full bg-mentorpurple-500 hover:bg-mentorpurple-600" 
+                    disabled={loading}
+                  >
+                    {loading ? 'Logging in...' : 'Login'}
+                  </Button>
+                )}
               </form>
             </TabsContent>
             
@@ -205,7 +286,7 @@ const Login = ({ onLogin }: LoginProps) => {
                   />
                 </div>
                 
-                <div className="flex space-x-4">
+                <div className="flex space-x-3">
                   <Button
                     type="button"
                     variant={userType === 'student' ? 'default' : 'outline'}
@@ -222,15 +303,47 @@ const Login = ({ onLogin }: LoginProps) => {
                   >
                     <School className="mr-2 h-4 w-4" /> Teacher
                   </Button>
+                  <Button
+                    type="button"
+                    variant={userType === 'organization' ? 'default' : 'outline'}
+                    className={`flex-1 ${userType === 'organization' ? 'bg-mentorpurple-500' : ''}`}
+                    onClick={() => setUserType('organization')}
+                  >
+                    <Building className="mr-2 h-4 w-4" /> Org
+                  </Button>
                 </div>
                 
-                <Button 
-                  type="submit" 
-                  className="w-full bg-mentorpurple-500 hover:bg-mentorpurple-600" 
-                  disabled={loading}
-                >
-                  {loading ? 'Creating Account...' : 'Create Account'}
-                </Button>
+                {userType === 'organization' ? (
+                  <div className="bg-mentorpurple-50 p-4 rounded-lg text-center">
+                    <h4 className="font-medium mb-2">Coming Soon for Organizations</h4>
+                    <p className="text-sm text-muted-foreground mb-3">
+                      Be the first to access MentorMind.ai and revolutionize how your organization preserves knowledge.
+                    </p>
+                    {waitlistSubmitted ? (
+                      <p className="text-mentorpurple-600 font-medium">Thank you for joining the waitlist!</p>
+                    ) : (
+                      <form onSubmit={handleWaitlistSubmit} className="space-y-2">
+                        <Input
+                          placeholder="your@organization.com"
+                          value={waitlistEmail}
+                          onChange={(e) => setWaitlistEmail(e.target.value)}
+                          required
+                        />
+                        <Button type="submit" className="w-full bg-mentorpurple-500 hover:bg-mentorpurple-600">
+                          Join the Waitlist
+                        </Button>
+                      </form>
+                    )}
+                  </div>
+                ) : (
+                  <Button 
+                    type="submit" 
+                    className="w-full bg-mentorpurple-500 hover:bg-mentorpurple-600" 
+                    disabled={loading}
+                  >
+                    {loading ? 'Creating Account...' : 'Create Account'}
+                  </Button>
+                )}
               </form>
             </TabsContent>
           </Tabs>

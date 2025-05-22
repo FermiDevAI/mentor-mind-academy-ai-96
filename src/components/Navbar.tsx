@@ -1,137 +1,101 @@
 
-import React, { useState } from 'react';
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
-import { Menu, LogOut } from "lucide-react";
-import { Link, useNavigate } from 'react-router-dom';
 import { UserData } from './Login';
 
+// Interface for Navbar component props
 interface NavbarProps {
   user: UserData | null;
-  onLogout?: () => void;
+  onLogout: () => void;
+  onNavigation?: (page: 'home' | 'mentors' | 'about') => void;
+  currentPage?: 'home' | 'mentors' | 'about';
 }
 
-const Navbar = ({ user, onLogout }: NavbarProps) => {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+// Navbar component displays the top navigation bar
+const Navbar = ({ user, onLogout, onNavigation, currentPage = 'home' }: NavbarProps) => {
+  // Use navigate hook for page navigation
   const navigate = useNavigate();
-  
-  const handleLogout = () => {
-    if (onLogout) {
-      onLogout();
-      navigate('/');
+
+  // Handle navigation link clicks
+  const handleNavClick = (page: 'home' | 'mentors' | 'about') => {
+    if (onNavigation) {
+      onNavigation(page);
     }
   };
 
+  // Generate nav link class based on if it's active
+  const navLinkClass = (page: string) => 
+    `cursor-pointer px-3 py-2 transition-colors hover:text-mentorpurple-600 ${
+      currentPage === page ? 'text-mentorpurple-600 font-medium' : 'text-foreground/70'
+    }`;
+
   return (
-    <nav className="w-full py-4 z-50 bg-background/80 backdrop-blur-md fixed top-0">
-      <div className="container px-4 mx-auto flex items-center justify-between">
-        <div className="flex items-center">
-          <img src="/favicon.svg" alt="MentorMind" className="h-8 w-8 mr-2" />
-          <span className="font-heading font-bold text-xl sm:text-2xl gradient-text">MentorMind</span>
+    <header className="fixed w-full bg-white border-b border-gray-200 z-50">
+      <div className="container mx-auto px-4 flex justify-between items-center h-16">
+        {/* Logo and site name */}
+        <div className="flex items-center space-x-2">
+          <img src="/favicon.svg" alt="MentorMind Logo" className="h-8 w-8" />
+          <span 
+            className="font-heading font-bold text-lg cursor-pointer"
+            onClick={() => handleNavClick('home')}
+          >
+            MentorMind<span className="text-mentorpurple-600">.ai</span>
+          </span>
         </div>
         
-        {/* Desktop Navigation */}
-        <div className="hidden md:flex items-center space-x-6">
-          <a href="#features" className="text-foreground/80 hover:text-mentorpurple-500 transition-colors">
-            Features
-          </a>
-          <a href="#mentors" className="text-foreground/80 hover:text-mentorpurple-500 transition-colors">
+        {/* Navigation links */}
+        <nav className="hidden md:flex items-center space-x-8">
+          <div 
+            className={navLinkClass('home')}
+            onClick={() => handleNavClick('home')}
+          >
+            Home
+          </div>
+          <div 
+            className={navLinkClass('mentors')}
+            onClick={() => handleNavClick('mentors')}
+          >
             Mentors
-          </a>
-          <a href="#about" className="text-foreground/80 hover:text-mentorpurple-500 transition-colors">
+          </div>
+          <div 
+            className={navLinkClass('about')}
+            onClick={() => handleNavClick('about')}
+          >
             About
-          </a>
-          
+          </div>
+        </nav>
+        
+        {/* User authentication section */}
+        <div className="flex items-center space-x-4">
           {user ? (
-            <div className="flex items-center space-x-4">
-              <span className="text-mentorpurple-500 font-medium">
-                Hello, {user.name} ({user.userType})
-              </span>
+            // If user is logged in, show user menu
+            <div className="flex items-center space-x-3">
+              <div className="hidden md:block">
+                <div className="text-sm font-medium">{user.name}</div>
+                <div className="text-xs text-foreground/70 capitalize">{user.userType}</div>
+              </div>
               <Button 
-                onClick={handleLogout}
-                className="flex items-center space-x-2 bg-mentorpurple-500 hover:bg-mentorpurple-600 text-white rounded-full px-6"
+                variant="outline" 
+                size="sm"
+                onClick={onLogout}
+                className="border-mentorpurple-200 hover:border-mentorpurple-400 hover:text-mentorpurple-600"
               >
-                <LogOut className="h-4 w-4" />
-                <span>Logout</span>
+                Log out
               </Button>
             </div>
           ) : (
+            // If user is not logged in, show login button
             <Button 
-              onClick={() => navigate('/login')} 
-              className="bg-mentorpurple-500 hover:bg-mentorpurple-600 text-white rounded-full px-6"
+              onClick={() => navigate('/login')}
+              className="bg-mentorpurple-500 hover:bg-mentorpurple-600"
             >
-              Sign In
+              Login
             </Button>
           )}
         </div>
-        
-        {/* Mobile Menu Button */}
-        <div className="md:hidden">
-          <Button 
-            variant="ghost" 
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="text-foreground"
-          >
-            <Menu className="h-6 w-6" />
-          </Button>
-        </div>
       </div>
-      
-      {/* Mobile Menu */}
-      {mobileMenuOpen && (
-        <div className="md:hidden py-4 px-4 bg-white shadow-lg animate-fade-in absolute w-full">
-          <div className="flex flex-col space-y-4">
-            <a 
-              href="#features" 
-              className="text-foreground/80 hover:text-mentorpurple-500 transition-colors py-2"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              Features
-            </a>
-            <a 
-              href="#mentors" 
-              className="text-foreground/80 hover:text-mentorpurple-500 transition-colors py-2"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              Mentors
-            </a>
-            <a 
-              href="#about" 
-              className="text-foreground/80 hover:text-mentorpurple-500 transition-colors py-2"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              About
-            </a>
-            
-            {user ? (
-              <>
-                <div className="text-mentorpurple-500 font-medium py-2">
-                  Hello, {user.name} ({user.userType})
-                </div>
-                <Button 
-                  onClick={() => {
-                    handleLogout();
-                    setMobileMenuOpen(false);
-                  }} 
-                  className="bg-mentorpurple-500 hover:bg-mentorpurple-600 text-white w-full flex items-center justify-center"
-                >
-                  <LogOut className="h-4 w-4 mr-2" /> Logout
-                </Button>
-              </>
-            ) : (
-              <Button 
-                onClick={() => {
-                  navigate('/login');
-                  setMobileMenuOpen(false);
-                }} 
-                className="bg-mentorpurple-500 hover:bg-mentorpurple-600 text-white w-full"
-              >
-                Sign In
-              </Button>
-            )}
-          </div>
-        </div>
-      )}
-    </nav>
+    </header>
   );
 };
 

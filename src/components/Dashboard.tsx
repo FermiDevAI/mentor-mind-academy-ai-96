@@ -1,8 +1,10 @@
+
 import React, { useState } from 'react';
 import HistoricalFigureCard from './HistoricalFigureCard';
 import ChatInterface from './ChatInterface';
 import ProgressTracker from './ProgressTracker';
 
+// Interface for historical figure data
 interface HistoricalFigure {
   id: string;
   name: string;

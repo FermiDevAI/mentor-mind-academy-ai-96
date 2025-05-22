@@ -3,14 +3,14 @@
 import axios from 'axios';
 
 // Gemini API configuration
-const API_KEY = 'AIzaSyBe9_T4kW3-1k2Zx0zF-WRFOwzNkomxepQ'; // Your Gemini API key
-const BASE_URL = 'https://generativelanguage.googleapis.com/v1beta';
+const API_KEY = 'AIzaSyBe9_T4kW3-1k2Zx0zF-WRFOwzNkomxepQ'; // Gemini API key
+const BASE_URL = 'https://generativelanguage.googleapis.com/v1beta'; // Gemini API base URL
 
 // Create axios instance for Gemini API
 const geminiClient = axios.create({
   baseURL: BASE_URL,
   params: {
-    key: API_KEY
+    key: API_KEY // API key is passed as a query parameter
   },
   headers: {
     'Content-Type': 'application/json',
@@ -35,12 +35,13 @@ export const geminiService = {
     try {
       console.log(`Sending request to Gemini API with prompt: "${prompt}"`);
       
+      // Make request to Gemini API
       const response = await geminiClient.post<GeminiResponse>(`/models/${modelVersion}:generateContent`, {
         contents: [
           {
             parts: [
               {
-                text: prompt
+                text: prompt // The text prompt to send to Gemini
               }
             ]
           }
@@ -55,7 +56,7 @@ export const geminiService = {
       return {
         success: true,
         content: generatedText,
-        raw: response.data
+        raw: response.data // Return raw response for debugging
       };
     } catch (error) {
       console.error('Error generating content with Gemini API:', error);
@@ -70,6 +71,7 @@ export const geminiService = {
   // Function to enhance responses using Gemini
   async enhanceHistoricalResponse(figureName: string, question: string, initialResponse: string) {
     try {
+      // Create a detailed prompt for Gemini to enhance the response
       const prompt = `
         You are ${figureName}, a historical figure. 
         The user asked: "${question}"
@@ -77,15 +79,22 @@ export const geminiService = {
         Initial response: "${initialResponse}"
         
         Please enhance this response to make it more accurate, informative, and in the style of how ${figureName} would speak.
+        Include relevant historical facts and context that ${figureName} would know.
+        Make sure to maintain the authentic voice and perspective of ${figureName}.
         Keep your answer concise but informative.
       `;
       
+      console.log(`Enhancing response for ${figureName} with Gemini API`);
+      
+      // Get enhanced response from Gemini
       const enhanced = await this.generateContent(prompt);
       
       if (enhanced.success) {
+        console.log('Successfully enhanced response with Gemini');
         return enhanced.content;
       } else {
         // Return original response if enhancement fails
+        console.log('Failed to enhance response, returning original');
         return initialResponse;
       }
     } catch (error) {

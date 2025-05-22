@@ -7,6 +7,7 @@ import { Send } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { chatService, replicaService } from '@/services/sensayApi';
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert"; // Import Alert component for error display
+import { geminiService } from '@/services/geminiApi';
 
 // Define the Message interface for chat messages
 interface Message {
@@ -57,6 +58,13 @@ const ChatInterface = ({ mentorId, mentorName, mentorImage }: ChatInterfaceProps
   useEffect(() => {
     const initializeReplica = async () => {
       try {
+        // Always set an error for Albert Einstein to demonstrate the failure scenario
+        if (mentorName === "Albert Einstein") {
+          console.log("Simulating connection error for Albert Einstein");
+          setConnectionError("Failed to connect to Albert Einstein. The AI service is currently unavailable.");
+          return;
+        }
+        
         setConnectionError(null);
         // In a real app, this would be the authenticated user's ID
         const userId = `user-${Date.now()}`;
@@ -75,6 +83,7 @@ const ChatInterface = ({ mentorId, mentorName, mentorImage }: ChatInterfaceProps
         setReplicaId(replicaUuid);
         console.log(`Successfully initialized replica for ${mentorName} with ID: ${replicaUuid}`);
       } catch (error) {
+        // Handle any API errors
         console.error("Failed to initialize replica:", error);
         setConnectionError("Failed to connect to the AI service. Please try again later.");
         toast({
@@ -119,16 +128,23 @@ const ChatInterface = ({ mentorId, mentorName, mentorImage }: ChatInterfaceProps
       const response = await chatService.sendMessage(userId, replicaId, input);
       
       if (response.success) {
+        // Process response with Gemini API for enhancement
+        const enhancedContent = await geminiService.enhanceHistoricalResponse(
+          mentorName,
+          input,
+          response.content || "I'm processing your request..."
+        );
+        
         // Add AI response to the chat
         const aiResponse: Message = {
           id: (Date.now() + 1).toString(),
           role: 'ai',
-          content: response.content || "I'm processing your request...",
+          content: enhancedContent,
           timestamp: new Date()
         };
         
         setMessages(prev => [...prev, aiResponse]);
-        console.log("Received successful response from AI:", response);
+        console.log("Received successful response from AI and enhanced with Gemini:", enhancedContent);
       } else {
         throw new Error("Failed to get response");
       }

@@ -12,7 +12,7 @@ const BASE_URL = 'https://api.sensay.io/v1'; // Base URL for the Sensay API
 export const organizationClient = axios.create({
   baseURL: BASE_URL,
   headers: {
-    'X-ORGANIZATION-SECRET': API_KEY,
+    'X-ORGANIZATION-SECRET': API_KEY, // Authentication using organization secret
     'Content-Type': 'application/json',
   },
 });
@@ -24,8 +24,8 @@ export const createUserClient = (userId: string) => {
   return axios.create({
     baseURL: BASE_URL,
     headers: {
-      'X-ORGANIZATION-SECRET': API_KEY,
-      'X-USER-ID': userId,
+      'X-ORGANIZATION-SECRET': API_KEY, // Organization-level authentication
+      'X-USER-ID': userId, // User-level authentication
       'Content-Type': 'application/json',
     },
   });
@@ -38,6 +38,7 @@ export const userService = {
   async getOrCreateUser(userId: string) {
     try {
       console.log(`Getting user with ID: ${userId}`);
+      // Try to get the existing user first
       const response = await organizationClient.get(`/users/${userId}`);
       console.log('User found:', response.data);
       return response.data;
@@ -71,7 +72,9 @@ export const replicaService = {
   async listReplicas(userId: string) {
     try {
       console.log(`Listing replicas for user ID: ${userId}`);
+      // Get authenticated client for this user
       const userClient = createUserClient(userId);
+      // Request all replicas for this user
       const response = await userClient.get('/replicas');
       console.log('Replicas found:', response.data);
       return response.data;
@@ -90,7 +93,9 @@ export const replicaService = {
   }) {
     try {
       console.log(`Creating replica for user ID: ${userId} with data:`, replicaData);
+      // Get authenticated client for this user
       const userClient = createUserClient(userId);
+      // Create the new replica
       const response = await userClient.post('/replicas', {
         ...replicaData,
         ownerID: userId,
@@ -123,13 +128,16 @@ export const replicaService = {
       const existingReplica = replicas.items.find(r => r.name === figure.name);
       
       if (existingReplica) {
+        // Use existing replica if found
         console.log(`Found existing replica for ${figure.name}:`, existingReplica);
         return existingReplica.uuid;
       }
       
       // Create a new replica if none exists
       console.log(`No existing replica found for ${figure.name}. Creating new one...`);
+      // Create URL-friendly slug from name
       const slug = figure.name.toLowerCase().replace(/\s+/g, '-');
+      // Create the replica
       const newReplica = await this.createReplica(userId, {
         name: figure.name,
         shortDescription: figure.description,
@@ -153,7 +161,9 @@ export const chatService = {
   async sendMessage(userId: string, replicaUuid: string, message: string) {
     try {
       console.log(`Sending message to replica ${replicaUuid} from user ${userId}: "${message}"`);
+      // Get authenticated client for this user
       const userClient = createUserClient(userId);
+      // Send message to the replica and get completion
       const response = await userClient.post(`/replicas/${replicaUuid}/chat/completions`, {
         content: message
       });
