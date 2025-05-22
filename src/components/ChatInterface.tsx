@@ -3,10 +3,10 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Send } from "lucide-react";
+import { Send, RefreshCw } from "lucide-react"; // Added RefreshCw icon for retry button
 import { useToast } from "@/hooks/use-toast";
 import { chatService, replicaService } from '@/services/sensayApi';
-import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert"; // Import Alert component for error display
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert"; 
 import { geminiService } from '@/services/geminiApi';
 
 // Define the Message interface for chat messages
@@ -62,6 +62,13 @@ const ChatInterface = ({ mentorId, mentorName, mentorImage }: ChatInterfaceProps
         if (mentorName === "Albert Einstein") {
           console.log("Simulating connection error for Albert Einstein");
           setConnectionError("Failed to connect to Albert Einstein. The AI service is currently unavailable.");
+          return;
+        }
+        
+        // Also simulate error for other mentors with missing images
+        if (mentorName === "Nelson Mandela" || mentorName === "Leonardo da Vinci") {
+          console.log(`Simulating connection error for ${mentorName}`);
+          setConnectionError(`Failed to connect to ${mentorName}. The AI service is currently unavailable.`);
           return;
         }
         
@@ -172,6 +179,28 @@ const ChatInterface = ({ mentorId, mentorName, mentorImage }: ChatInterfaceProps
     }
   };
   
+  // Handler for retry connection
+  const handleRetryConnection = () => {
+    toast({
+      title: "Retrying connection",
+      description: `Attempting to reconnect to ${mentorName}...`,
+    });
+    
+    // Reset error state and attempt to initialize again
+    setConnectionError(null);
+    
+    // In a real app, this would retry the initialization process
+    // For now, we'll just simulate a delay and then show the error again
+    setTimeout(() => {
+      setConnectionError(`Failed to connect to ${mentorName}. The AI service is currently unavailable.`);
+      toast({
+        title: "Connection Failed",
+        description: "Still unable to establish connection. Please try again later.",
+        variant: "destructive"
+      });
+    }, 2000);
+  };
+  
   return (
     <div className="flex flex-col h-[600px] bg-gray-50 rounded-xl border border-gray-200 shadow-lg overflow-hidden transition-all duration-300 hover:shadow-xl hover:shadow-mentorpurple-300/30">
       {/* Header with mentor information */}
@@ -186,43 +215,74 @@ const ChatInterface = ({ mentorId, mentorName, mentorImage }: ChatInterfaceProps
       {connectionError && (
         <Alert variant="destructive" className="m-4">
           <AlertTitle>Connection Error</AlertTitle>
-          <AlertDescription>{connectionError}</AlertDescription>
+          <AlertDescription className="mb-4">{connectionError}</AlertDescription>
+          
+          {/* Add retry button */}
+          <Button 
+            onClick={handleRetryConnection} 
+            variant="outline" 
+            size="sm" 
+            className="mt-2 bg-white hover:bg-gray-100"
+          >
+            <RefreshCw className="h-4 w-4 mr-2" /> Retry Connection
+          </Button>
         </Alert>
       )}
       
-      {/* Chat message container */}
-      <div className="flex-grow overflow-y-auto p-4 space-y-4 bg-gradient-to-br from-white to-mentorpurple-50/30">
-        {messages.map((msg) => (
-          <div 
-            key={msg.id} 
-            className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'} mb-4`}
-          >
+      {/* Chat message container - only show if no connection error */}
+      {!connectionError ? (
+        <div className="flex-grow overflow-y-auto p-4 space-y-4 bg-gradient-to-br from-white to-mentorpurple-50/30">
+          {messages.map((msg) => (
             <div 
-              className={`max-w-[80%] ${
-                msg.role === 'user' ? 'chat-bubble-user' : 'chat-bubble-ai'
-              } animate-fade-in transition-all duration-300 hover:shadow-lg ${
-                msg.role === 'user' ? 'hover:bg-mentorpurple-600' : 'hover:bg-gray-300/80'
-              }`}
+              key={msg.id} 
+              className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'} mb-4`}
             >
-              {msg.content}
+              <div 
+                className={`max-w-[80%] ${
+                  msg.role === 'user' ? 'chat-bubble-user' : 'chat-bubble-ai'
+                } animate-fade-in transition-all duration-300 hover:shadow-lg ${
+                  msg.role === 'user' ? 'hover:bg-mentorpurple-600' : 'hover:bg-gray-300/80'
+                }`}
+              >
+                {msg.content}
+              </div>
             </div>
-          </div>
-        ))}
-        {/* Loading indicator */}
-        {isLoading && (
-          <div className="flex justify-start mb-4">
-            <div className="chat-bubble-ai flex space-x-2 items-center">
-              <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-              <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-              <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+          ))}
+          {/* Loading indicator */}
+          {isLoading && (
+            <div className="flex justify-start mb-4">
+              <div className="chat-bubble-ai flex space-x-2 items-center">
+                <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+              </div>
             </div>
+          )}
+          {/* Reference for auto-scrolling */}
+          <div ref={messagesEndRef} />
+        </div>
+      ) : (
+        // If there's a connection error, show a full-size error message
+        <div className="flex-grow flex flex-col items-center justify-center p-8 text-center bg-gray-50">
+          <div className="bg-red-50 p-8 rounded-lg border border-red-200 max-w-md">
+            <h3 className="text-xl font-heading font-semibold text-red-700 mb-2">
+              Connection to {mentorName} Failed
+            </h3>
+            <p className="text-gray-600 mb-4">
+              We're unable to establish a connection to this historical mentor at the moment.
+              This could be due to high traffic or maintenance.
+            </p>
+            <p className="text-gray-600 mb-6">
+              Please try again later or choose another mentor to chat with.
+            </p>
+            <Button onClick={handleRetryConnection} className="bg-mentorpurple-500 hover:bg-mentorpurple-600">
+              <RefreshCw className="h-4 w-4 mr-2" /> Retry
+            </Button>
           </div>
-        )}
-        {/* Reference for auto-scrolling */}
-        <div ref={messagesEndRef} />
-      </div>
+        </div>
+      )}
       
-      {/* Message input area */}
+      {/* Message input area - still show but disable if there's a connection error */}
       <div className="p-4 border-t border-gray-200 bg-white">
         <form 
           onSubmit={(e) => {
