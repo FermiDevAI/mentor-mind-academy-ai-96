@@ -1,4 +1,3 @@
-
 // Import necessary dependencies from React and UI components
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
@@ -58,20 +57,6 @@ const ChatInterface = ({ mentorId, mentorName, mentorImage }: ChatInterfaceProps
   useEffect(() => {
     const initializeReplica = async () => {
       try {
-        // Always set an error for Albert Einstein to demonstrate the failure scenario
-        if (mentorName === "Albert Einstein") {
-          console.log("Simulating connection error for Albert Einstein");
-          setConnectionError("Failed to connect to Albert Einstein. The AI service is currently unavailable.");
-          return;
-        }
-        
-        // Also simulate error for other mentors with missing images
-        if (mentorName === "Nelson Mandela" || mentorName === "Leonardo da Vinci") {
-          console.log(`Simulating connection error for ${mentorName}`);
-          setConnectionError(`Failed to connect to ${mentorName}. The AI service is currently unavailable.`);
-          return;
-        }
-        
         setConnectionError(null);
         // In a real app, this would be the authenticated user's ID
         const userId = `user-${Date.now()}`;
@@ -92,7 +77,7 @@ const ChatInterface = ({ mentorId, mentorName, mentorImage }: ChatInterfaceProps
       } catch (error) {
         // Handle any API errors
         console.error("Failed to initialize replica:", error);
-        setConnectionError("Failed to connect to the AI service. Please try again later.");
+        setConnectionError(`Failed to connect to ${mentorName}. The AI service is currently unavailable.`);
         toast({
           title: "Connection Error",
           description: "Failed to initialize the chat. Please try again.",
