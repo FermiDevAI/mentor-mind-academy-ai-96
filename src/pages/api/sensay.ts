@@ -1,8 +1,28 @@
 
-import { NextApiRequest, NextApiResponse } from 'next';
 import { organizationClient, userService, replicaService, chatService } from '../../services/sensayApi';
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+// Define request and response types without depending on Next.js
+interface ApiRequest {
+  body: {
+    action: string;
+    userId: string;
+    replicaId?: string;
+    message?: string;
+    figure?: {
+      name: string;
+      description: string;
+      era: string;
+      specialty: string;
+    };
+  }
+}
+
+interface ApiResponse {
+  status: (code: number) => ApiResponse;
+  json: (data: any) => void;
+}
+
+export default async function handler(req: ApiRequest, res: ApiResponse) {
   try {
     const { action, userId, replicaId, message, figure } = req.body;
     
