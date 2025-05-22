@@ -5,7 +5,10 @@ import ChatInterface from './ChatInterface';
 import ProgressTracker from './ProgressTracker';
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { Users } from "lucide-react";
+import { Users, ChevronDown, ChevronUp } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { toast } from "@/hooks/use-toast";
 
 // Interface for historical figure data
 interface HistoricalFigure {
@@ -98,6 +101,14 @@ const Dashboard = () => {
 
   // State for currently selected mentor
   const [selectedMentor, setSelectedMentor] = useState<HistoricalFigure | null>(null);
+
+  // State for the waitlist dialog
+  const [showWaitlistDialog, setShowWaitlistDialog] = useState(false);
+  const [email, setEmail] = useState('');
+  const [emailSubmitted, setEmailSubmitted] = useState(false);
+  
+  // State for collapsible sections
+  const [isOrgSectionCollapsed, setIsOrgSectionCollapsed] = useState(true);
   
   // Handler for starting a chat with a historical figure
   const handleStartChat = (id: string) => {
@@ -125,8 +136,34 @@ const Dashboard = () => {
 
   // Handler for joining the private organization waitlist
   const handleJoinWaitlist = () => {
-    // This would normally open a form or modal to collect information
-    alert("Thanks for your interest! You've been added to our waitlist. We'll contact you when private organization access is available.");
+    setShowWaitlistDialog(true);
+  };
+
+  // Handler for submitting the waitlist email
+  const handleSubmitEmail = () => {
+    if (!email || !/\S+@\S+\.\S+/.test(email)) {
+      toast({
+        title: "Invalid Email",
+        description: "Please enter a valid email address.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    setEmailSubmitted(true);
+    console.log("Email submitted to waitlist:", email);
+    
+    // Close the dialog after 3 seconds
+    setTimeout(() => {
+      setShowWaitlistDialog(false);
+      setEmailSubmitted(false);
+      setEmail('');
+      
+      toast({
+        title: "Waitlist Confirmation",
+        description: "Thank you for joining our waitlist!",
+      });
+    }, 3000);
   };
 
   return (
@@ -141,36 +178,52 @@ const Dashboard = () => {
       
       {/* Private Organization Mentors Section */}
       <div className="bg-mentorpurple-50 p-6 rounded-xl border border-mentorpurple-100">
-        <div className="flex justify-between items-center mb-6">
-          <div>
-            <h2 className="text-2xl font-heading font-bold text-mentorpurple-700">
-              <Users className="inline-block mr-2 h-6 w-6" /> Organization Mentors
-            </h2>
-            <p className="text-sm text-foreground/70 mt-1">
-              Premium mentors available exclusively for organizations
-            </p>
+        <div className="flex justify-between items-center mb-4 cursor-pointer" 
+          onClick={() => setIsOrgSectionCollapsed(!isOrgSectionCollapsed)}>
+          <div className="flex items-center">
+            <Users className="mr-2 h-6 w-6 text-mentorpurple-700" />
+            <div>
+              <h2 className="text-2xl font-heading font-bold text-mentorpurple-700">
+                Organization Mentors
+              </h2>
+              <p className="text-sm text-foreground/70 mt-1">
+                Premium mentors available exclusively for organizations
+              </p>
+            </div>
           </div>
-          <Button onClick={handleJoinWaitlist} className="bg-mentorpurple-500 hover:bg-mentorpurple-600">
-            Join the Waitlist
-          </Button>
+          <div className="flex items-center">
+            <Button onClick={(e) => {
+              e.stopPropagation(); 
+              handleJoinWaitlist();
+            }} className="bg-mentorpurple-500 hover:bg-mentorpurple-600 mr-2">
+              Join the Waitlist
+            </Button>
+            {isOrgSectionCollapsed ? (
+              <ChevronDown className="h-5 w-5 text-mentorpurple-700 transition-transform" />
+            ) : (
+              <ChevronUp className="h-5 w-5 text-mentorpurple-700 transition-transform" />
+            )}
+          </div>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {privateFigures.map(figure => (
-            <div key={figure.id} className="relative">
-              <div className="absolute inset-0 bg-white/60 backdrop-blur-sm z-10 flex items-center justify-center rounded-lg">
-                <div className="bg-mentorpurple-100 text-mentorpurple-800 text-xs px-3 py-2 rounded-full font-semibold">
-                  Coming Soon
+        {!isOrgSectionCollapsed && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-4">
+            {privateFigures.map(figure => (
+              <div key={figure.id} className="relative">
+                <div className="absolute inset-0 bg-white/60 backdrop-blur-sm z-10 flex items-center justify-center rounded-lg">
+                  <div className="bg-mentorpurple-100 text-mentorpurple-800 text-xs px-3 py-2 rounded-full font-semibold">
+                    Coming Soon
+                  </div>
                 </div>
+                <HistoricalFigureCard
+                  key={figure.id}
+                  {...figure}
+                  onStartChat={() => {}} // Disabled for now
+                />
               </div>
-              <HistoricalFigureCard
-                key={figure.id}
-                {...figure}
-                onStartChat={() => {}} // Disabled for now
-              />
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
       
       {/* Public Mentors Section */}
@@ -205,6 +258,66 @@ const Dashboard = () => {
       
       {/* Progress tracker component */}
       <ProgressTracker mentorId={selectedMentor ? selectedMentor.id : "default"} />
+
+      {/* Waitlist Dialog */}
+      <Dialog open={showWaitlistDialog} onOpenChange={setShowWaitlistDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Join the Organization Waitlist</DialogTitle>
+            <DialogDescription>
+              {!emailSubmitted 
+                ? "Enter your email to join our waitlist for organization access." 
+                : "Thank you! We will notify you when organization mentors become available."}
+            </DialogDescription>
+          </DialogHeader>
+
+          {!emailSubmitted ? (
+            <>
+              <div className="grid gap-4 py-4">
+                <div className="flex items-center gap-4">
+                  <Input
+                    id="email"
+                    placeholder="your.email@example.com"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="flex-1"
+                  />
+                </div>
+              </div>
+              <DialogFooter>
+                <Button
+                  type="submit"
+                  className="bg-mentorpurple-500 hover:bg-mentorpurple-600"
+                  onClick={handleSubmitEmail}
+                >
+                  Join Waitlist
+                </Button>
+              </DialogFooter>
+            </>
+          ) : (
+            <div className="py-6 text-center">
+              <div className="inline-block rounded-full bg-green-100 p-3 mb-4">
+                <svg 
+                  className="h-6 w-6 text-green-600" 
+                  fill="none" 
+                  viewBox="0 0 24 24" 
+                  stroke="currentColor"
+                >
+                  <path 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round" 
+                    strokeWidth={2} 
+                    d="M5 13l4 4L19 7" 
+                  />
+                </svg>
+              </div>
+              <p className="text-lg font-medium">Thank you for joining our waitlist!</p>
+              <p className="mt-2 text-foreground/70">You are now on our priority list. We'll send you an email as soon as our organization mentors service becomes available.</p>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

@@ -1,8 +1,9 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { UserData } from './Login';
+import { Github, Twitter } from 'lucide-react';
 
 // Interface for Navbar component props
 interface NavbarProps {
@@ -16,6 +17,9 @@ interface NavbarProps {
 const Navbar = ({ user, onLogout, onNavigation, currentPage = 'home' }: NavbarProps) => {
   // Use navigate hook for page navigation
   const navigate = useNavigate();
+  
+  // State for tracking hover
+  const [hoveredItem, setHoveredItem] = useState<string | null>(null);
 
   // Handle navigation link clicks
   const handleNavClick = (page: 'home' | 'mentors' | 'about') => {
@@ -24,11 +28,19 @@ const Navbar = ({ user, onLogout, onNavigation, currentPage = 'home' }: NavbarPr
     }
   };
 
-  // Generate nav link class based on if it's active
-  const navLinkClass = (page: string) => 
-    `cursor-pointer px-3 py-2 transition-colors hover:text-mentorpurple-600 ${
-      currentPage === page ? 'text-mentorpurple-600 font-medium' : 'text-foreground/70'
-    }`;
+  // Generate nav link class based on if it's active or hovered
+  const navLinkClass = (page: string) => {
+    const isActive = currentPage === page;
+    const isHovered = hoveredItem === page;
+    
+    return `cursor-pointer px-3 py-2 transition-all duration-300 relative ${
+      isActive 
+        ? 'text-mentorpurple-600 font-medium' 
+        : isHovered 
+          ? 'text-mentorpurple-500' 
+          : 'text-foreground/70'
+    } ${isHovered ? 'scale-105' : ''}`;
+  };
 
   return (
     <header className="fixed w-full bg-white border-b border-gray-200 z-50">
@@ -37,7 +49,7 @@ const Navbar = ({ user, onLogout, onNavigation, currentPage = 'home' }: NavbarPr
         <div className="flex items-center space-x-2">
           <img src="/favicon.svg" alt="MentorMind Logo" className="h-8 w-8" />
           <span 
-            className="font-heading font-bold text-lg cursor-pointer"
+            className="font-heading font-bold text-lg cursor-pointer hover:text-mentorpurple-600 transition-colors"
             onClick={() => handleNavClick('home')}
           >
             MentorMind<span className="text-mentorpurple-600">.ai</span>
@@ -49,20 +61,44 @@ const Navbar = ({ user, onLogout, onNavigation, currentPage = 'home' }: NavbarPr
           <div 
             className={navLinkClass('home')}
             onClick={() => handleNavClick('home')}
+            onMouseEnter={() => setHoveredItem('home')}
+            onMouseLeave={() => setHoveredItem(null)}
           >
             Home
+            {currentPage === 'home' && (
+              <span className="absolute bottom-0 left-0 w-full h-0.5 bg-mentorpurple-600 rounded-full"></span>
+            )}
+            {hoveredItem === 'home' && currentPage !== 'home' && (
+              <span className="absolute bottom-0 left-0 w-full h-0.5 bg-mentorpurple-400 rounded-full animate-fade-in"></span>
+            )}
           </div>
           <div 
             className={navLinkClass('mentors')}
             onClick={() => handleNavClick('mentors')}
+            onMouseEnter={() => setHoveredItem('mentors')}
+            onMouseLeave={() => setHoveredItem(null)}
           >
             Mentors
+            {currentPage === 'mentors' && (
+              <span className="absolute bottom-0 left-0 w-full h-0.5 bg-mentorpurple-600 rounded-full"></span>
+            )}
+            {hoveredItem === 'mentors' && currentPage !== 'mentors' && (
+              <span className="absolute bottom-0 left-0 w-full h-0.5 bg-mentorpurple-400 rounded-full animate-fade-in"></span>
+            )}
           </div>
           <div 
             className={navLinkClass('about')}
             onClick={() => handleNavClick('about')}
+            onMouseEnter={() => setHoveredItem('about')}
+            onMouseLeave={() => setHoveredItem(null)}
           >
             About
+            {currentPage === 'about' && (
+              <span className="absolute bottom-0 left-0 w-full h-0.5 bg-mentorpurple-600 rounded-full"></span>
+            )}
+            {hoveredItem === 'about' && currentPage !== 'about' && (
+              <span className="absolute bottom-0 left-0 w-full h-0.5 bg-mentorpurple-400 rounded-full animate-fade-in"></span>
+            )}
           </div>
         </nav>
         
