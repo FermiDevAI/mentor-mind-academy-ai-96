@@ -1,4 +1,3 @@
-
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700;800&display=swap');
 
 @tailwind base;
@@ -105,11 +104,11 @@
   }
   
   .chat-bubble-user {
-    @apply bg-gradient-to-r from-mentorpurple-500 to-mentorpurple-600 text-white;
+    @apply bg-mentorpurple-600 text-white p-3 rounded-lg rounded-tr-none shadow;
   }
   
   .chat-bubble-ai {
-    @apply bg-gradient-to-r from-gray-100 to-gray-200 text-gray-800;
+    @apply bg-gray-200 text-gray-800 p-3 rounded-lg rounded-tl-none shadow;
   }
   
   .chat-bubble-user::after {
@@ -126,15 +125,18 @@
     @apply bg-gradient-to-r from-mentorpurple-500 via-mentororange-500 to-mentorpurple-600 bg-clip-text text-transparent bg-[length:200%] animate-[gradient_2s_ease_infinite];
   }
   
-  @keyframes gradient {
-    0% {
-      background-position: 0% 50%;
+  .animate-fade-in {
+    animation: fadeIn 0.3s ease-in;
+  }
+  
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
     }
-    50% {
-      background-position: 100% 50%;
-    }
-    100% {
-      background-position: 0% 50%;
+    to {
+      opacity: 1;
+      transform: translateY(0);
     }
   }
 }
